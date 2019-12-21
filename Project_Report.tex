@@ -1,0 +1,265 @@
+\documentclass{scrreprt}
+\usepackage{listings}
+\usepackage{underscore}
+\usepackage[bookmarks=true]{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{subcaption}
+\hypersetup{
+    bookmarks=false,    % show bookmarks bar?
+    pdftitle={Machine Learning Report},    % title
+    pdfauthor={},                     % author
+    pdfsubject={TeX and LaTeX},                        % subject of the document
+    pdfkeywords={TeX, LaTeX, graphics, images}, % list of keywords
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=blue,       % color of internal links
+    citecolor=black,       % color of links to bibliography
+    filecolor=black,        % color of file links
+    urlcolor=purple,        % color of external links
+    linktoc=page            % only page is linked
+}%
+\def\myversion{1.0 }
+\date{}
+
+\usepackage{hyperref}
+\begin{document}
+
+\begin{flushright}
+    \rule{16cm}{5pt}\vskip1cm
+    \begin{bfseries}
+        \begin{Huge}{Malaria Parastite Detection \\ \begin{large}ML Project (GEN 511)\end{large}\\}\end{Huge}
+		\vspace{1.5cm}   
+        \today\\
+        \vspace{12cm}
+        
+		\begin{large}
+		\begin{center}Crooked Three  \\     
+          \vspace{1cm}
+         Sriram G.  \hspace{3cm} Ravi Kiran \hspace{3cm} S. Purvaj\\
+         (IMT2017018) \hspace{2.25cm}(IMT2017034)\hspace{2cm}(IMT2017039)\\
+        \vspace{1.5cm}
+		\end{center}
+%        \today\\
+        \end{large}
+    \end{bfseries}
+\end{flushright}
+
+\tableofcontents
+
+
+
+
+\chapter{Introduction}
+
+\section{What is Malaria Parasite detection? }
+Given images of cells from thin-blood smear, both infected and uninfected, we have to classify the given images into two categories infected(0) or uninfected(1).
+\begin{figure}[h]
+
+\begin{subfigure}{0.5\textwidth}
+\includegraphics{Infected}
+%\includegraphics[scale=0.25\linewidth, height=5cm]{Uinfected} 
+
+\caption{Infected}
+\end{subfigure}
+
+\begin{subfigure}{0.5\textwidth}
+\includegraphics{Uinfected}
+\caption{Uninfected}
+\end{subfigure}
+
+\end{figure}
+
+\section{What is Image Classification?}
+Image Classification is the process of assigning a particular $class$ to image or probability that an image belongs to the class . Here the number of classes is two and hence it is a \textbf{binary classification} problem. 
+
+\section{References}
+{******************}
+
+
+
+
+
+\chapter{Data}
+
+\section{Exploration of data}
+The data consists of two categories infected and uninfected. Each of the category is present in two seperate folders $Uninfected$ and $Parasitized$. Each of the class consists of $11023$ images of train data, which sums up the total train data to 22046 images. Test data consists only of images without labels with a count of 1587. These are the images that have to be classified. Each image is in RGB form. Each image is not of the same size and each image has only one cell in it. 
+
+\section{Data Analysis}
+From the analysis we did regarding the pink shde in some of the images , we figured out that the reason for the abundance of pink in the images was staining of the specimens before putting it under a microscope. Staining helps in penetrating the cell walls and highlighting the cell components. Upon human observation it was found that one of the trivial difference between infected and an uninfected cell image was the presence of a dark spot.
+
+
+
+\section{Data Pre-processing}
+The first thing we did was to resize all the images to an intermediate size (we resized images that are too small to a bigger size and images that are too large to a smaller size). 
+The range of height varies from $46$ to $364$ whereas the width varies from $46$ to $382$.
+
+\section{Data augmentation(for Deep Learning)}
+The data augmetation for this problem comprises of rotating the image about 15degrees each,  zoom. Also the image was normalized by muliplying by $1/255.0$ on each pixel to normalize.   
+
+
+%\chapter{Feature Extraction}
+%\section{Contours:}
+%Show contours do not yield good results and explain why. \textbf{(put images)}
+%
+%\section{Pixel colour variation:}
+%This feature is identified by human observation and is specific to this dataset. First, for each pixel in the image, the \textit{PinkDistance} of the pixel is calculated as the difference in colour of the pixel from dark pink. In other words, the lesser the \textit{PinkDistance}, closer is the colour of the pixel to dark pink. The formula we used to define colour difference is: \textbf{(write diatance formula from stackoverflow)}. Then for each pixel, we calculated the list of the differences of the \textit{PinkDistance} of this pixel from the \textit{PinkDistance} of it's neighbourhood pixels (eight pixel neighbourhood) and retained the maximum value of these differences as \textit{Variance}. We took the highest of \textit{Variance}'s among all the pixels of an image as a feature of the image.***
+%
+%\section{Area of Contours:}
+%This feature is based on image processing approach of Contours. We considered the area of the largest contour and the area of the second largest contour as two seperate features for each image. \textbf{(put images)}
+
+\chapter{Model Selection and Building}
+
+\section{Feature Extraction}
+\subsection{Variation in color and **closeness to dark pink}
+			Since we have found out that the main feature of infected cell is the presence of a dark spot we considered two features that would capture the variation in contrast of a pixel from its neighbouring pixels and also the closeness of the pixel to the dark pink color of the spot. Since there were some imagtes with blue spots it was ensured that the variation factor would dominate and both would help to exrtact when there is a oink spot. When there was a varaition from lighter to darker color the closeness to pink color would ensure that there won't be any miss-classification.
+\subsection{Contours}  
+			First idea was to see if there are multiple contours in a single image and based on that predict the class. However this did not work because some images had slight variations which the functions in opencv captured and drew contours. For example the below image is a an uninfected image but it has many small contours iin it.
+				{IMAGE ***********}
+			The next possible feature that cpuld be extracted was the area of highest 2 contours in an image. This would ensure if there is any relation between the area of the cell and area of the possible blob.
+			
+\section{Model Building}
+
+\subsection{Logistic Regression}
+\subsubsection{Theory}
+Logistic regression is one of the simple binary classifier that is based on a log loss .
+W is the weight matrix and x is the data matrix. B is the bias.
+\begin{center}
+	Hypothesis : Z = WX+ b
+	\\
+	$h(\theta(x))  = sigmoid(Z)$ 
+	\\
+\end{center}
+	where sigmoid is 
+\begin{center} 
+		$sigmoid(x) = \frac{1}{1+e^{-x}}$
+\end{center}
+**images*
+Loss function for logistic regression is 
+\begin{center}
+$	J(h_{\theta}(x),y)) = -ylog(h_{\theta}(x)) - (1-y) log(1-h_{\theta}(x)) $
+\end{center}
+
+
+\subsubsection{Feature Selection}
+For the first model, the variation in color and * closeness to pink were chosen for training. \\
+For the second model, the area of 2 maximum contours were chosen as features to train the model. 
+The result of training and testing are given in the following section.
+
+\subsubsection{Training and Testing}
+(Variance)Testing : 89\%   \\
+Confusion Matrix   \\
+$	[[1970  275]
+ 	[ 209 1955]] $
+(Contours)Testing : 78.32\%
+	
+\subsection{Support Vector Machine}
+\subsubsection{Theory}
+Support Vector Machine is a simple machine learning model inspired form the kernels. Given data an SVM tries to give the best decision boundary that can fit into the data distribution. It is based on $kernel$ $trick$.
+
+\subsubsection{Feature Selection}
+We reused the same features that were used above to train the two logistic regression to train two SVM models.\\
+The result of training and testing are given in the following section.
+
+\subsubsection{Training and Testing}
+(Variance)Testing : 88.7\%   \\
+		Confusion Matrix
+
+		[[1983  300]
+ 		[ 196 1930]]
+(Contours)Testing : 84.036\%
+\subsection{K Nearest Neighbours}
+\subsubsection{Theory}
+The knn algorithm uses the distance of a point from its k nearest neighbours and then tries to see which label it has to be assigned.
+
+
+\subsubsection{Feature Selection}
+We reused the same features that were used above to train the two logistic regression to train two SVM models.\\
+The result of training and testing are given in the following section.
+
+\subsubsection{Training and Testing}
+(Variance)Testing : 89.15\%    \\
+	Confusion Matrix
+	$	[[1959  258]
+ 		[ 220 1972]] $
+(Contours)Testing : 90.43\%
+
+
+
+\section{Model-2: Convolutional Neural Network}
+
+\subsection{CNN1:}
+
+\subsubsection{Model description:}
+This is the first neural network that we trained on this. This neural network is a simple sequential model with four convolution blocks (each convolutional block has a convolutional layer followed by a maxpooling layer) followed by a flattening layer and some dense layers. We added a couple of dropout layers in between dense layers to prevent the model from overfitting to the training data.
+
+We used \textit{relu} as our non-linear activation function in the convolutional layers and in the dense layers except the last dense layer. In the last dense layer, we used \textit{sigmoid} activation since the problem is of binary classification.
+
+Below are the details of the model description and the number of parameters in the model.
+
+\begin{figure}[b]
+\begin{subfigure}{0.5\textwidth}
+\includegraphics{CNN0}
+\end{subfigure}
+\end{figure}
+
+
+To compile the model, we used \textit{adam} optimizer and \textit{binary crossentropy} loss function.
+
+\subsubsection{Model specific pre-processing:}
+We did some data augmentation for this model by randomly rotating each image in the range $-15$deg to $+15$deg. In addition, we also added a random zoom-in for each image.
+
+\subsubsection{Train and test results:}
+
+\subsection{CNN2:}
+
+\subsubsection{Model description:}
+This is the second neural network that we tried the data on. This neural network is a bit deeper and complex than the previous one. It has three convolution blocks each of which has two convolutional layers followed by a maxpooling layer and batch normalization. Then we added a flattening layer and four dense layers. We added a couple of dropout layers in between dense layers to prevent the model from overfitting to the training data.\\
+
+This time, we additionally added a dropout layer in between the $2nd$ and the $3rd$ convolutional blocks and a batch normalization between the $2nd$ and the $3rd$ dense layer.
+
+We used \textit{relu} as our non-linear activation function in the convolutional layers and in the dense layers except the last dense layer. In the last dense layer, we used \textit{sigmoid} activation since the problem is of binary classification.
+
+Below are the details of the model description and the number of parameters in the model.
+
+\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+\includegraphics{CNN1}
+\end{subfigure}
+\end{figure}
+
+The loss function, optimizer we used to compile this model are the same as that of the previous model.
+
+\subsubsection{Model specific pre-processing:}
+We did similar data augmentation of randomly rotating each image in the range $-15$deg to $+15$deg and random zoom-in for each image.
+
+\subsubsection{Train and test results:}
+
+\section{Model-3: Residual Neural Network}
+\subsubsection{Model description:}
+The third model we trained the dataset on is a residual neural network. It has two convolution blocks each of which has two convolutional layers followed by a maxpooling layer and batch normalization. We added a third convolutional block which has only one convolutional layer followed by a max pooling block. Then we added a flattening layer and six dense layers. We added a couple of dropout layers in between dense layers to prevent the model from overfitting to the training data.\\
+
+What makes this model a residual model is the addition of the output of one layer directly to the input of a subsequent layer. In our model, we did this by adding the output of the first dense layer to the input of the third dense layer and the output of the second dense layer to the input of the fourth dense layer.\\
+
+We used \textit{relu} as our non-linear activation function in the convolutional layers and in the dense layers except the last dense layer. In the last dense layer, we used \textit{sigmoid} activation since the problem is of binary classification.
+
+Below are the details of the model description and the number of parameters in the model.
+\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+\includegraphics{RNN}
+\end{subfigure}
+\end{figure}
+
+\subsubsection{Model specific pre-processing:}
+We did some data augmentation for this model by randomly rotating each image in the range $-15$deg to $+15$deg. In addition, we also added a random zoom-in for each image.
+
+\subsubsection{Train and test results:}
+
+\chapter{Observations and Results}
+
+
+
+
+
+\end{document}
